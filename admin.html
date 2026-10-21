@@ -179,9 +179,9 @@
 
             } catch (error) {
                 message.textContent =
-                    "Échec de connexion : vérifiez vos identifiants " +
-                    "et la confirmation de votre adresse e-mail.";
-            } finally {
+                    "Erreur:" + error.message;
+            } 
+            finally {
                 button.disabled = false;
                 button.textContent = "Se connecter";
             }
