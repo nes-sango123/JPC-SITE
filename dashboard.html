@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tableau de bord | JPC-SITE</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #14532d;
+            color: white;
+            padding: 22px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        header p {
+            margin: 0;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .welcome {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #15803d;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .card p {
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .status {
+            color: #166534;
+            font-weight: bold;
+        }
+
+        .logout {
+            margin-top: 25px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #b91c1c;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>JPC-SITE</h1>
+        <p>Espace d'administration</p>
+    </header>
+
+    <main>
+        <section class="welcome">
+            <h2>Bienvenue dans votre tableau de bord</h2>
+
+            <p>
+                Gérez les activités et les informations
+                destinées à la jeunesse congolaise.
+            </p>
+
+            <p id="account-status" class="status">
+                Vérification de la connexion...
+            </p>
+        </section>
+
+        <section class="cards">
+
+            <article class="card">
+                <h2>Activités</h2>
+                <p>
+                    L'espace destiné à la gestion des activités
+                    sera développé ici.
+                </p>
+            </article>
+
+            <article class="card">
+                <h2>Publications</h2>
+                <p>
+                    Nous préparerons ici la gestion des annonces
+                    et des informations destinées aux jeunes.
+                </p>
+            </article>
+
+            <article class="card">
+                <h2>Paramètres</h2>
+                <p>
+                    Nous ajouterons ici les paramètres
+                    de gestion du site.
+                </p>
+            </article>
+
+        </section>
+
+        <button id="logout-button" class="logout">
+            Se déconnecter
+        </button>
+    </main>
+
+    <footer>
+        JPC-SITE — Administration
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // Reprendre les mêmes valeurs que dans admin.html.
+        const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
+        const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
+
+        const supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        async function checkSession() {
+            const { data, error } =
+                await supabaseClient.auth.getSession();
+
+            if (error || !data.session) {
+                window.location.replace("admin.html");
+                return;
+            }
+
+            document.getElementById("account-status").textContent =
+                "Connecté : " + data.session.user.email;
+        }
+
+        document.getElementById("logout-button")
+            .addEventListener("click", async function () {
+
+                const { error } =
+                    await supabaseClient.auth.signOut();
+
+                if (error) {
+                    alert("Impossible de se déconnecter. Réessaie.");
+                    return;
+                }
+
+                window.location.replace("admin.html");
+            });
+
+        checkSession();
+    </script>
+
+</body>
+</html>
