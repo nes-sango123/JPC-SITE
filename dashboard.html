@@ -116,7 +116,64 @@
                 Vérification de la connexion...
             </p>
         </section>
+        <section class="welcome">
+    <h2>Ajouter une activité</h2>
 
+    <form id="activity-form">
+        <label for="titre">Titre de l'activité</label>
+        <input
+            type="text"
+            id="titre"
+            required
+            style="width:100%; padding:12px; margin:10px 0 20px;"
+        >
+
+        <label for="description">Description</label>
+        <textarea
+            id="description"
+            required
+            rows="4"
+            style="width:100%; padding:12px; margin:10px 0 20px;"
+        ></textarea>
+
+        <label for="lieu">Lieu</label>
+        <input
+            type="text"
+            id="lieu"
+            style="width:100%; padding:12px; margin:10px 0 20px;"
+        >
+
+        <label for="date_activite">Date et heure</label>
+        <input
+            type="datetime-local"
+            id="date_activite"
+            style="width:100%; padding:12px; margin:10px 0 20px;"
+        >
+
+        <label for="image_url">Lien de l'image (facultatif)</label>
+        <input
+            type="url"
+            id="image_url"
+            placeholder="https://..."
+            style="width:100%; padding:12px; margin:10px 0 20px;"
+        >
+
+        <label>
+            <input
+                type="checkbox"
+                id="publie"
+                style="width:auto; margin-right:8px;"
+            >
+            Publier immédiatement sur le site
+        </label>
+
+        <button type="submit" id="save-activity">
+            Enregistrer l'activité
+        </button>
+
+        <p id="activity-message" role="status"></p>
+    </form>
+</section>
         <section class="cards">
 
             <article class="card">
