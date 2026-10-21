@@ -171,12 +171,30 @@
                     throw error;
                 }
 
-                message.textContent =
-                    "Connexion réussie. Vérification des autorisations nécessaire.";
+                const { data: admin, error: adminError } =
+    await supabaseClient
+        .from("admins")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
 
-                // Nous ajouterons la redirection vers le tableau de bord
-                // après avoir configuré les autorisations administrateur.
+if (adminError) {
+    throw adminError;
+}
 
+if (!admin) {
+    await supabaseClient.auth.signOut();
+
+    message.textContent =
+        "Accès refusé : vous n'êtes pas administrateur.";
+
+    return;
+}
+
+message.textContent = "Connexion réussie. Redirection...";
+
+window.location.href = "dashboard.html";
+return;
             } catch (error) {
                 message.textContent =
                     "Erreur:" + error.message;
