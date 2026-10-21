@@ -166,18 +166,33 @@
             SUPABASE_KEY
         );
 
-        async function checkSession() {
-            const { data, error } =
-                await supabaseClient.auth.getSession();
+async function checkSession() {
+    const { data, error } =
+        await supabaseClient.auth.getSession();
 
-            if (error || !data.session) {
-                window.location.replace("admin.html");
-                return;
-            }
+    if (error || !data.session) {
+        window.location.replace("admin.html");
+        return;
+    }
 
-            document.getElementById("account-status").textContent =
-                "Connecté : " + data.session.user.email;
-        }
+    const user = data.session.user;
+
+    const { data: admin, error: adminError } =
+        await supabaseClient
+            .from("admins")
+            .select("id")
+            .eq("id", user.id)
+            .maybeSingle();
+
+    if (adminError || !admin) {
+        await supabaseClient.auth.signOut();
+        window.location.replace("admin.html");
+        return;
+    }
+
+    document.getElementById("account-status").textContent =
+        "Administrateur connecté : " + user.email;
+}
 
         document.getElementById("logout-button")
             .addEventListener("click", async function () {
