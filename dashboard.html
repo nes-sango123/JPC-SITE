@@ -264,7 +264,65 @@ async function checkSession() {
 
                 window.location.replace("admin.html");
             });
+    document.getElementById("activity-form")
+    .addEventListener("submit", async function (event) {
+        event.preventDefault();
 
+        const saveButton = document.getElementById("save-activity");
+        const activityMessage = document.getElementById("activity-message");
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Enregistrement...";
+        activityMessage.textContent = "";
+
+        try {
+            const { data: sessionData, error: sessionError } =
+                await supabaseClient.auth.getSession();
+
+            if (sessionError || !sessionData.session) {
+                throw new Error("Session expirée. Reconnectez-vous.");
+            }
+
+            const titre = document.getElementById("titre").value.trim();
+            const description = document.getElementById("description").value.trim();
+            const lieu = document.getElementById("lieu").value.trim();
+            const dateValue = document.getElementById("date_activite").value;
+            const imageUrl = document.getElementById("image_url").value.trim();
+            const publie = document.getElementById("publie").checked;
+
+            const { error } = await supabaseClient
+                .from("activites")
+                .insert({
+                    titre: titre,
+                    description: description,
+                    lieu: lieu || null,
+                    date_activite: dateValue
+                        ? new Date(dateValue).toISOString()
+                        : null,
+                    image_url: imageUrl || null,
+                    publie: publie
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            activityMessage.textContent =
+                "Activité enregistrée avec succès !";
+
+            document.getElementById("activity-form").reset();
+
+        } catch (error) {
+            console.error("Erreur d'enregistrement :", error);
+
+            activityMessage.textContent =
+                "Échec de l'enregistrement : " + error.message;
+
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = "Enregistrer l'activité";
+        }
+    });
         checkSession();
     </script>
 
