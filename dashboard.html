@@ -316,7 +316,7 @@ async function checkSession() {
             console.error("Erreur d'enregistrement :", error);
 
             activityMessage.textContent =
-                "Échec de l'enregistrement : " + error.message;
+                "Échec de l'enregistrement : " + (error.message || JSON.stringify(error));
 
         } finally {
             saveButton.disabled = false;
