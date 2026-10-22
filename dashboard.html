@@ -328,14 +328,14 @@ const { error } = await saveQuery;
 if (error) {
 throw error;
 }
-            }
+            
 
             activityMessage.textContent =
                 "Activité enregistrée avec succès !";
 
             document.getElementById("activity-form").reset();
         editingActivityId = null;
-        await loadActivites();
+        await loadActivities();
 
         } catch (error) {
             console.error("Erreur d'enregistrement :", error);
