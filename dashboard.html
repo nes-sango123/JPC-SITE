@@ -377,8 +377,31 @@ data.forEach(function (activite) {
     status.textContent = activite.publie
         ? "Statut : Publiée"
         : "Statut : Brouillon";
+    const editButton = document.createElement("button");
+editButton.type = "button";
+editButton.textContent = "Modifier";
 
-    card.append(title, description, lieu, date, status);
+editButton.addEventListener("click", function () {
+document.getElementById("titre").value = activite.titre;
+document.getElementById("description").value = activite.description;
+document.getElementById("lieu").value = activite.lieu || "";
+document.getElementById("date_activite").value =
+activite.date_activite
+? new Date(activite.date_activite).toISOString().slice(0, 16)
+: "";
+document.getElementById("image_url").value = activite.image_url || "";
+document.getElementById("publie").checked = activite.publie;
+
+document.getElementById("activity-form").scrollIntoView({
+    behavior: "smooth"
+});
+
+document.getElementById("activity-message").textContent =
+    "Modifie les informations, puis enregistre les changements.";
+
+});
+
+    card.append(title, description, lieu, date, status, editButton);
     activitiesList.appendChild(card);
 });
 
