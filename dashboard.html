@@ -418,8 +418,42 @@ document.getElementById("activity-message").textContent =
 
 });
 
-    card.append(title, description, lieu, date, status, editButton);
-    activitiesList.appendChild(card);
+    const deleteButton = document.createElement("button");
+deleteButton.type = "button";
+deleteButton.textContent = "Supprimer";
+
+deleteButton.addEventListener("click", async function () {
+    const confirmation = confirm(
+        "Veux-tu vraiment supprimer cette activité ?"
+    );
+
+    if (!confirmation) {
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("activites")
+        .delete()
+        .eq("id", activite.id);
+
+    if (error) {
+        alert("Erreur lors de la suppression : " + error.message);
+        return;
+    }
+
+    alert("Activité supprimée avec succès !");
+    await loadActivities();
+});
+
+card.append(
+    title,
+    description,
+    lieu,
+    date,
+    status,
+    editButton,
+    deleteButton
+);
 });
 
 }
