@@ -357,6 +357,7 @@ const { data, error } = await supabaseClient
     .from("activites")
     .select("*")
     .order("created_at", { ascending: false });
+            console.log("Activités reçues :", data,"Erreur :", error);
 
 if (error) {
     console.error("Erreur de chargement :", error);
