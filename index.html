@@ -260,47 +260,9 @@
                     Prochains événements
                 </h2>
             </div>
-            <div class="events-list">
-                <article class="event">
-                    <div class="event-date">
-                        <strong>19</strong>
-                        <span>SEPT</span>
-                    </div>
-                    <div class="event-info">
-                        <h3>Culte de jeunesse</h3>
-                        <p>Kinshasa</p>
-                        <p>15h30</p>
-                        <a href="#" class="event-btn"
-                        data-event="culte">Voir les détails</a>
-                    </div>
-                </article>
-                <article class="event">
-                    <div class="event-date">
-                        <strong>29</strong>
-                        <span>OCT</span>
-                    </div>
-                    <div class="event-info">
-                        <h3>Etude biblique</h3>
-                        <p>Kinshasa</p>
-                        <p>15h30</p>
-                        <a href="#" class="event-btn"
-                        data-event="etude">Voir les détails</a>
-                    </div>
-                </article>
-                <article class="event">
-                    <div class="event-date">
-                        <strong>07</strong>
-                        <span>JUIN</span>
-                    </div>
-                    <div class="event-info">
-                        <h3>Evangélisation</h3>
-                        <p>Kinshasa</p>
-                        <p>11h00</p>
-                        <a href="#" class="event-btn"
-                        data-event="evangelisation">Voir les détails</a>
-                    </div>
-                </article>
-            </div>
+            <div class="events-list" id="events-list">
+                 <p>Chargement des événements...</p>
+                </div>
         </section>
      </main>
 
@@ -439,6 +401,113 @@ WhatsApp</a>
         &#8593
     </button>
     <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
+const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+async function afficherEvenements() {
+    const liste = document.getElementById("events-list");
+
+    if (!liste) return;
+
+    const { data, error } = await supabaseClient
+        .from("activites")
+        .select("id, titre, description, lieu, date_activite, publie")
+        .eq("publie", true)
+        .order("date_activite", { ascending: true });
+
+    if (error) {
+        console.error("Erreur Supabase :", error);
+        liste.textContent = "Impossible de charger les événements pour le moment.";
+        return;
+    }
+
+    liste.replaceChildren();
+
+    if (!data || data.length === 0) {
+        liste.textContent = "Aucun événement publié pour le moment.";
+        return;
+    }
+
+    data.forEach(function(activite) {
+        const article = document.createElement("article");
+        article.className = "event";
+
+        const dateBloc = document.createElement("div");
+        dateBloc.className = "event-date";
+
+        const date = activite.date_activite
+            ? new Date(activite.date_activite + "T12:00:00")
+            : null;
+
+        const jour = document.createElement("strong");
+        jour.textContent = date && !isNaN(date)
+            ? date.getDate().toString().padStart(2, "0")
+            : "--";
+
+        const mois = document.createElement("span");
+        mois.textContent = date && !isNaN(date)
+            ? date.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()
+            : "DATE";
+
+        dateBloc.append(jour, mois);
+
+        const infos = document.createElement("div");
+        infos.className = "event-info";
+
+        const titre = document.createElement("h3");
+        titre.textContent = activite.titre || "Événement JPC";
+
+        const description = document.createElement("p");
+        description.textContent = activite.description || "";
+
+        const lieu = document.createElement("p");
+        lieu.textContent = activite.lieu
+            ? "Lieu : " + activite.lieu
+            : "Lieu à préciser";
+
+        const dateTexte = document.createElement("p");
+        dateTexte.textContent = date && !isNaN(date)
+            ? "Date : " + date.toLocaleDateString("fr-FR")
+            : "Date à préciser";
+
+        const bouton = document.createElement("button");
+        bouton.type = "button";
+        bouton.className = "event-btn";
+        bouton.textContent = "Voir les détails";
+
+        bouton.addEventListener("click", function() {
+            const modal = document.getElementById("eventModal");
+
+            document.getElementById("modalTitle").textContent =
+                activite.titre || "Événement";
+
+            document.getElementById("modalDate").textContent =
+                dateTexte.textContent;
+
+            document.getElementById("modalTime").textContent = "";
+
+            document.getElementById("modalLocation").textContent =
+                activite.lieu ? "Lieu : " + activite.lieu : "Lieu à préciser";
+
+            if (modal) {
+                modal.style.display = "flex";
+            }
+        });
+
+        infos.append(titre, description, lieu, dateTexte, bouton);
+        article.append(dateBloc, infos);
+        liste.appendChild(article);
+    });
+}
+
+afficherEvenements();
+</script>
 
 
 </body>
