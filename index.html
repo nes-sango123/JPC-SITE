@@ -400,8 +400,7 @@ WhatsApp</a>
     <button id="backToTop" aria-label="Retour en haut">
         &#8593
     </button>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
+    const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
 const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
 
 const supabaseClient = window.supabase.createClient(
@@ -413,6 +412,8 @@ async function afficherEvenements() {
     const liste = document.getElementById("events-list");
 
     if (!liste) return;
+
+    liste.textContent = "Chargement des événements...";
 
     try {
         const { data, error } = await supabaseClient
@@ -434,27 +435,19 @@ async function afficherEvenements() {
             const article = document.createElement("article");
             article.className = "event";
 
-            const dateBrute = activite.date_activite;
+            const valeurDate = activite.date_activite;
+            const correspondance = String(valeurDate || "").match(
+                /^(\d{4})-(\d{2})-(\d{2})/
+            );
+
             let date = null;
 
-            if (dateBrute) {
-                const correspondance = String(dateBrute).match(
-                    /^(\d{4})-(\d{2})-(\d{2})/
+            if (correspondance) {
+                date = new Date(
+                    Number(correspondance[1]),
+                    Number(correspondance[2]) - 1,
+                    Number(correspondance[3])
                 );
-
-                if (correspondance) {
-                    date = new Date(
-                        Number(correspondance[1]),
-                        Number(correspondance[2]) - 1,
-                        Number(correspondance[3])
-                    );
-                } else {
-                    const essai = new Date(dateBrute);
-
-                    if (!Number.isNaN(essai.getTime())) {
-                        date = essai;
-                    }
-                }
             }
 
             const dateValide = date && !Number.isNaN(date.getTime());
@@ -469,9 +462,8 @@ async function afficherEvenements() {
 
             const mois = document.createElement("span");
             mois.textContent = dateValide
-                ? date.toLocaleDateString("fr-FR", {
-                    month: "short"
-                }).replace(".", "").toUpperCase()
+                ? date.toLocaleDateString("fr-FR", { month: "short" })
+                    .replace(".", "").toUpperCase()
                 : "DATE";
 
             dateBloc.append(jour, mois);
@@ -491,7 +483,7 @@ async function afficherEvenements() {
             const dateTexte = document.createElement("p");
             dateTexte.textContent = dateValide
                 ? "Date : " + date.toLocaleDateString("fr-FR")
-                : "Date à préciser";
+                : "Date à vérifier";
 
             const bouton = document.createElement("button");
             bouton.type = "button";
@@ -518,10 +510,9 @@ async function afficherEvenements() {
             liste.appendChild(article);
         });
 
-    } catch (error) {
-        console.error("Erreur de chargement des événements :", error);
-        liste.textContent =
-            "Impossible de charger les événements. Réessaie plus tard.";
+    } catch (erreur) {
+        console.error("Erreur Supabase :", erreur);
+        liste.textContent = "Erreur de chargement. Vérifie la connexion.";
     }
 }
 
@@ -530,7 +521,7 @@ afficherEvenements();
 const eventModal = document.getElementById("eventModal");
 const closeModal = document.getElementById("closeModal");
 
-if (closeModal && eventModal) {
+if (eventModal && closeModal) {
     closeModal.addEventListener("click", function() {
         eventModal.style.display = "none";
     });
