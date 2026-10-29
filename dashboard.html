@@ -303,9 +303,11 @@ async function checkSession() {
 titre: titre,
 description: description,
 lieu: lieu || null,
-date_activite: dateValue
+date_activite: dateValue 
 ? new Date(dateValue).toISOString()
 : null,
+heure.activite: dateValue ?
+dateValue.slice(11, 16) : null,
 image_url: imageUrl || null,
 publie: publie
 };
