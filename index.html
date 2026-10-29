@@ -400,10 +400,13 @@ WhatsApp</a>
     <button id="backToTop" aria-label="Retour en haut">
         &#8593
     </button>
+     <script
+         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
     const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
-const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
+    const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
 
-const supabaseClient = window.supabase.createClient(
+    const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
@@ -542,6 +545,8 @@ if (eventModal && closeModal) {
         }
     });
 }
-</script><script src="script.js"></script>
+</script>
+
+<script src="script.js"></script>
 </body>
 </html>
