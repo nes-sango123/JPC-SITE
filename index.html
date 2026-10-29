@@ -415,144 +415,141 @@ async function afficherEvenements() {
 
     if (!liste) return;
 
-    const { data, error } = await supabaseClient
-        .from("activites")
-        .select("id, titre, description, lieu, date_activite, publie")
-        .eq("publie", true)
-        .order("date_activite", { ascending: true });
+    try {
+        const { data, error } = await supabaseClient
+            .from("activites")
+            .select("id, titre, description, lieu, date_activite, publie")
+            .eq("publie", true)
+            .order("date_activite", { ascending: true });
 
-    if (error) {
-        console.error("Erreur Supabase :", error);
-        liste.textContent = "Impossible de charger les événements pour le moment.";
-        return;
-    }
+        if (error) throw error;
 
-    liste.replaceChildren();
+        liste.replaceChildren();
 
-    if (!data || data.length === 0) {
-        liste.textContent = "Aucun événement publié pour le moment.";
-        return;
-    }
+        if (!data || data.length === 0) {
+            liste.textContent = "Aucun événement publié pour le moment.";
+            return;
+        }
 
-    data.forEach(function(activite) {
-        const article = document.createElement("article");
-        article.className = "event";
+        data.forEach(function(activite) {
+            const article = document.createElement("article");
+            article.className = "event";
 
-        const dateBloc = document.createElement("div");
-        dateBloc.className = "event-date";
+            const dateBrute = activite.date_activite;
+            let date = null;
 
-        const dateBrute = activite.date_activite;
+            if (dateBrute) {
+                const correspondance = String(dateBrute).match(
+                    /^(\d{4})-(\d{2})-(\d{2})/
+                );
 
-let date = null;
+                if (correspondance) {
+                    date = new Date(
+                        Number(correspondance[1]),
+                        Number(correspondance[2]) - 1,
+                        Number(correspondance[3])
+                    );
+                } else {
+                    const essai = new Date(dateBrute);
 
-if (dateBrute) {
-const correspondance = String(dateBrute).match(
-/^(\d{4})-(\d{2})-(\d{2})/
-);
-
-if (correspondance) {
-    date = new Date(
-        Number(correspondance[1]),
-        Number(correspondance[2]) - 1,
-        Number(correspondance[3])
-    );
-} else {
-    const essai = new Date(dateBrute);
-
-    if (!Number.isNaN(essai.getTime())) {
-        date = essai;
-    }
-}
-
-}
-
-        const jour = document.createElement("strong");
-        jour.textContent = date && !isNaN(date)
-            ? date.getDate().toString().padStart(2, "0")
-            : "--";
-
-        const mois = document.createElement("span");
-        mois.textContent = date && !isNaN(date)
-            ? date.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()
-            : "DATE";
-
-        dateBloc.append(jour, mois);
-
-        const infos = document.createElement("div");
-        infos.className = "event-info";
-
-        const titre = document.createElement("h3");
-        titre.textContent = activite.titre || "Événement JPC";
-
-        const description = document.createElement("p");
-        description.textContent = activite.description || "";
-
-        const lieu = document.createElement("p");
-        lieu.textContent = activite.lieu
-            ? "Lieu : " + activite.lieu
-            : "Lieu à préciser";
-
-        const dateTexte = document.createElement("p");
-        dateTexte.textContent = date && !
-            Number.isNaN(date.getTime()) ? "Date : " +
-            date.toLocaleDateString("fr-FR")
-            : "Date à préciser";
-
-        const bouton = document.createElement("button");
-        bouton.type = "button";
-        bouton.className = "event-btn";
-        bouton.textContent = "Voir les détails";
-
-        bouton.addEventListener("click", function() {
-            const modal = document.getElementById("eventModal");
-
-            document.getElementById("modalTitle").textContent =
-                activite.titre || "Événement";
-
-            document.getElementById("modalDate").textContent =
-                dateTexte.textContent;
-
-            document.getElementById("modalTime").textContent = "";
-
-            document.getElementById("modalLocation").textContent =
-                activite.lieu ? "Lieu : " + activite.lieu : "Lieu à préciser";
-
-            if (modal) {
-                modal.style.display = "flex";
+                    if (!Number.isNaN(essai.getTime())) {
+                        date = essai;
+                    }
+                }
             }
+
+            const dateValide = date && !Number.isNaN(date.getTime());
+
+            const dateBloc = document.createElement("div");
+            dateBloc.className = "event-date";
+
+            const jour = document.createElement("strong");
+            jour.textContent = dateValide
+                ? String(date.getDate()).padStart(2, "0")
+                : "--";
+
+            const mois = document.createElement("span");
+            mois.textContent = dateValide
+                ? date.toLocaleDateString("fr-FR", {
+                    month: "short"
+                }).replace(".", "").toUpperCase()
+                : "DATE";
+
+            dateBloc.append(jour, mois);
+
+            const infos = document.createElement("div");
+            infos.className = "event-info";
+
+            const titre = document.createElement("h3");
+            titre.textContent = activite.titre || "Événement JPC";
+
+            const description = document.createElement("p");
+            description.textContent = activite.description || "";
+
+            const lieu = document.createElement("p");
+            lieu.textContent = "Lieu : " + (activite.lieu || "À préciser");
+
+            const dateTexte = document.createElement("p");
+            dateTexte.textContent = dateValide
+                ? "Date : " + date.toLocaleDateString("fr-FR")
+                : "Date à préciser";
+
+            const bouton = document.createElement("button");
+            bouton.type = "button";
+            bouton.className = "event-btn";
+            bouton.textContent = "Voir les détails";
+
+            bouton.addEventListener("click", function() {
+                document.getElementById("modalTitle").textContent =
+                    activite.titre || "Événement";
+
+                document.getElementById("modalDate").textContent =
+                    dateTexte.textContent;
+
+                document.getElementById("modalTime").textContent = "";
+
+                document.getElementById("modalLocation").textContent =
+                    "Lieu : " + (activite.lieu || "À préciser");
+
+                document.getElementById("eventModal").style.display = "flex";
+            });
+
+            infos.append(titre, description, lieu, dateTexte, bouton);
+            article.append(dateBloc, infos);
+            liste.appendChild(article);
         });
 
-        infos.append(titre, description, lieu, dateTexte, bouton);
-        article.append(dateBloc, infos);
-        liste.appendChild(article);
-    });
+    } catch (error) {
+        console.error("Erreur de chargement des événements :", error);
+        liste.textContent =
+            "Impossible de charger les événements. Réessaie plus tard.";
+    }
 }
 
 afficherEvenements();
-        const eventModal = document.getElementById("eventModal");
+
+const eventModal = document.getElementById("eventModal");
 const closeModal = document.getElementById("closeModal");
 
 if (closeModal && eventModal) {
-closeModal.addEventListener("click", function() {
-eventModal.style.display = "none";
-});
-}
+    closeModal.addEventListener("click", function() {
+        eventModal.style.display = "none";
+    });
 
-if (eventModal) {
-eventModal.addEventListener("click", function(event) {
-if (event.target === eventModal) {
-eventModal.style.display = "none";
-}
-});
-}
+    eventModal.addEventListener("click", function(event) {
+        if (event.target === eventModal) {
+            eventModal.style.display = "none";
+        }
+    });
 
-document.addEventListener("keydown", function(event) {
-if (event.key === "Escape" && eventModal) {
-eventModal.style.display = "none";
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+            eventModal.style.display = "none";
+        }
+    });
 }
-});
-</script>
-
-
+</script><script src="script.js"></script></body>
+</html>
+  
 </body>
 </html>
