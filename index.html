@@ -442,7 +442,7 @@ async function afficherEvenements() {
         dateBloc.className = "event-date";
 
         const date = activite.date_activite
-            ? new Date(activite.date_activite + "T12:00:00")
+            ? new Date(activite.date_activite)
             : null;
 
         const jour = document.createElement("strong");
@@ -472,8 +472,8 @@ async function afficherEvenements() {
             : "Lieu à préciser";
 
         const dateTexte = document.createElement("p");
-        dateTexte.textContent = date && !isNaN(date)
-            ? "Date : " + date.toLocaleDateString("fr-FR")
+        dateTexte.textContent = activite.date_activite ? "Date : " + new Date(activite.date_activite + "T12:00:00")
+            .toLocaleDateString("fr-FR")
             : "Date à préciser";
 
         const bouton = document.createElement("button");
