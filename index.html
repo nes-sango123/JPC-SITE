@@ -403,23 +403,21 @@ WhatsApp</a>
      <script
          src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-    const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
-    const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
-
-    const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+        const SUPABASE_URL = "https://ndnadcyrqtlesyybzgoa.supabase.co";
+        const SUPABASE_KEY = "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
+        const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
 );
+        async function afficherEvenements() {
+        const liste = document.getElementById("events-list");
 
-async function afficherEvenements() {
-    const liste = document.getElementById("events-list");
+         if (!liste) return;
 
-    if (!liste) return;
+         liste.textContent = "Chargement des événements...";
 
-    liste.textContent = "Chargement des événements...";
-
-    try {
-        const { data, error } = await supabaseClient
+         try {
+         const { data, error } = await supabaseClient
             .from("activites")
             .select("id, titre, description, lieu, date_activite, heure_activite, publie")
             .eq("publie", true)
