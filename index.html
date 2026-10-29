@@ -441,9 +441,30 @@ async function afficherEvenements() {
         const dateBloc = document.createElement("div");
         dateBloc.className = "event-date";
 
-        const date = activite.date_activite
-            ? new Date(activite.date_activite)
-            : null;
+        const dateBrute = activite.date_activite;
+
+let date = null;
+
+if (dateBrute) {
+const correspondance = String(dateBrute).match(
+/^(\d{4})-(\d{2})-(\d{2})/
+);
+
+if (correspondance) {
+    date = new Date(
+        Number(correspondance[1]),
+        Number(correspondance[2]) - 1,
+        Number(correspondance[3])
+    );
+} else {
+    const essai = new Date(dateBrute);
+
+    if (!Number.isNaN(essai.getTime())) {
+        date = essai;
+    }
+}
+
+}
 
         const jour = document.createElement("strong");
         jour.textContent = date && !isNaN(date)
@@ -472,8 +493,9 @@ async function afficherEvenements() {
             : "Lieu à préciser";
 
         const dateTexte = document.createElement("p");
-        dateTexte.textContent = activite.date_activite ? "Date : " + new Date(activite.date_activite + "T12:00:00")
-            .toLocaleDateString("fr-FR")
+        dateTexte.textContent = date && !
+            Number.isNaN(date.getTime()) ? "Date : " +
+            date.toLocaleDateString("fr-FR")
             : "Date à préciser";
 
         const bouton = document.createElement("button");
@@ -507,6 +529,28 @@ async function afficherEvenements() {
 }
 
 afficherEvenements();
+        const eventModal = document.getElementById("eventModal");
+const closeModal = document.getElementById("closeModal");
+
+if (closeModal && eventModal) {
+closeModal.addEventListener("click", function() {
+eventModal.style.display = "none";
+});
+}
+
+if (eventModal) {
+eventModal.addEventListener("click", function(event) {
+if (event.target === eventModal) {
+eventModal.style.display = "none";
+}
+});
+}
+
+document.addEventListener("keydown", function(event) {
+if (event.key === "Escape" && eventModal) {
+eventModal.style.display = "none";
+}
+});
 </script>
 
 
