@@ -418,7 +418,7 @@ async function afficherEvenements() {
     try {
         const { data, error } = await supabaseClient
             .from("activites")
-            .select("id, titre, description, lieu, date_activite, publie")
+            .select("id, titre, description, lieu, date_activite, heure_activite, publie")
             .eq("publie", true)
             .order("date_activite", { ascending: true });
 
@@ -484,7 +484,9 @@ async function afficherEvenements() {
             dateTexte.textContent = dateValide
                 ? "Date : " + date.toLocaleDateString("fr-FR")
                 : "Date à vérifier";
-
+            const heureTexte = document.createElement ("p");
+            heureTexte.textContent = activite.heure_activite ? "Heure : " +
+            activite.heure_activite.slice(0,5).replace(":", "h") : "Heure à préciser";
             const bouton = document.createElement("button");
             bouton.type = "button";
             bouton.className = "event-btn";
@@ -497,7 +499,9 @@ async function afficherEvenements() {
                 document.getElementById("modalDate").textContent =
                     dateTexte.textContent;
 
-                document.getElementById("modalTime").textContent = "";
+                document.getElementById("modalTime").textContent = activite.heure_activite ? "Heure : " +
+                activite.heure_activite.slice(0,5).replace(":", "h")
+                : "Heure à préciser";
 
                 document.getElementById("modalLocation").textContent =
                     "Lieu : " + (activite.lieu || "À préciser");
@@ -505,7 +509,7 @@ async function afficherEvenements() {
                 document.getElementById("eventModal").style.display = "flex";
             });
 
-            infos.append(titre, description, lieu, dateTexte, bouton);
+            infos.append(titre, description, lieu, dateTexte, heureTexte, bouton);
             article.append(dateBloc, infos);
             liste.appendChild(article);
         });
