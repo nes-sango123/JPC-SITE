@@ -230,8 +230,7 @@
             SUPABASE_URL,
             SUPABASE_KEY
         );
-
-async function checkSession() {
+        async function checkSession() {
     const { data, error } =
         await supabaseClient.auth.getSession();
 
@@ -245,11 +244,16 @@ async function checkSession() {
     const { data: admin, error: adminError } =
         await supabaseClient
             .from("admins")
-            .select("id")
+            .select("id, role, status")
             .eq("id", user.id)
             .maybeSingle();
 
-    if (adminError || !admin) {
+    if (
+        adminError ||
+        !admin ||
+        admin.status !== "active" ||
+        !["super_admin", "admin"].includes(admin.role)
+    ) {
         await supabaseClient.auth.signOut();
         window.location.replace("admin.html");
         return;
@@ -257,10 +261,11 @@ async function checkSession() {
 
     document.getElementById("account-status").textContent =
         "Administrateur connecté : " + user.email;
+
     document.querySelector("main").hidden = false;
+
     await loadActivities();
 }
-
         document.getElementById("logout-button")
             .addEventListener("click", async function () {
 
