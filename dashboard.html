@@ -103,7 +103,7 @@
         <p>Espace d'administration</p>
     </header>
 
-    <main>
+    <main hidden>
         <section class="welcome">
             <h2>Bienvenue dans votre tableau de bord</h2>
 
@@ -257,6 +257,8 @@ async function checkSession() {
 
     document.getElementById("account-status").textContent =
         "Administrateur connecté : " + user.email;
+    document.querySelector("main").hidden = false;
+    await loadActivities();
 }
 
         document.getElementById("logout-button")
@@ -464,8 +466,6 @@ card.append(
 });
 
 }
-
-        loadActivities();
         checkSession();
     </script>
 
