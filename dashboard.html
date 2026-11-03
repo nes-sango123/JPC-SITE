@@ -288,9 +288,12 @@
 
     document.querySelector("main").hidden = false;
 
-            if (admin.role === "super_admin") {
-                document.getElementById("admin-management").hidden = false;
-                await loadActivities();
+    if (admin.role === "super_admin") {
+        document.getElementById("admin-management").hidden = false;
+        await loadAdmins();
+    }
+
+    await loadActivities();
 }
         document.getElementById("logout-button")
             .addEventListener("click", async function () {
