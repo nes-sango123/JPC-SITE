@@ -116,6 +116,30 @@
                 Vérification de la connexion...
             </p>
         </section>
+        <section id="admin-management" hidden>
+    <h2>Gestion des administrateurs</h2>
+
+    <div>
+        <h3>Ajouter un administrateur</h3>
+
+        <input
+            type="email"
+            id="new-admin-email"
+            placeholder="Adresse e-mail du nouvel administrateur"
+        >
+
+        <button id="add-admin-button">
+            Envoyer une invitation
+        </button>
+    </div>
+
+    <div>
+        <h3>Administrateurs enregistrés</h3>
+        <div id="admins-list"></div>
+    </div>
+
+    <p id="admin-message"></p>
+</section>
         <section class="welcome">
     <h2>Ajouter une activité</h2>
 
@@ -264,7 +288,9 @@
 
     document.querySelector("main").hidden = false;
 
-    await loadActivities();
+            if (admin.role === "super_admin") {
+                document.getElementById("admin-management").hidden = false;
+                await loadActivities();
 }
         document.getElementById("logout-button")
             .addEventListener("click", async function () {
@@ -471,6 +497,96 @@ card.append(
 });
 
 }
+        // GESTION DES ADMINISTRATEURS
+
+async function loadAdmins() {
+    const list = document.getElementById("admins-list");
+    const message = document.getElementById("admin-message");
+
+    list.innerHTML = "Chargement des administrateurs...";
+
+    const { data: admins, error } = await supabaseClient
+        .from("admins")
+        .select("id, email, role, status, created_at")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        list.innerHTML = "Impossible de charger les administrateurs.";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    admins.forEach(admin => {
+        const item = document.createElement("div");
+
+        const title = document.createElement("p");
+        title.textContent =
+            admin.email + " — " + admin.role + " — " + admin.status;
+
+        item.appendChild(title);
+
+        if (admin.role !== "super_admin") {
+            ["suspend", "reactivate", "revoke"].forEach(action => {
+                const button = document.createElement("button");
+
+                button.textContent = {
+                    suspend: "Suspendre",
+                    reactivate: "Réactiver",
+                    revoke: "Révoquer"
+                }[action];
+
+                button.addEventListener("click", () => {
+                    manageAdmin(action, admin.id);
+                });
+
+                item.appendChild(button);
+            });
+        }
+
+        list.appendChild(item);
+    });
+}
+
+async function manageAdmin(action, adminId = null, email = null) {
+    const message = document.getElementById("admin-message");
+
+    const { data, error } = await supabaseClient.functions.invoke(
+        "manage-admins",
+        {
+            body: {
+                action: action,
+                adminId: adminId,
+                email: email
+            }
+        }
+    );
+
+    if (error || data?.error) {
+        message.textContent =
+            data?.error || error?.message || "Une erreur est survenue.";
+        return;
+    }
+
+    message.textContent = data.message;
+
+    await loadAdmins();
+}
+
+document.getElementById("add-admin-button")
+    .addEventListener("click", async () => {
+        const emailInput = document.getElementById("new-admin-email");
+        const email = emailInput.value.trim();
+        const message = document.getElementById("admin-message");
+
+        if (!email) {
+            message.textContent = "Saisis une adresse e-mail.";
+            return;
+        }
+
+        await manageAdmin("add", null, email);
+        emailInput.value = "";
+    });
         checkSession();
     </script>
 
