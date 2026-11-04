@@ -227,52 +227,71 @@
     const button = document.getElementById("submit-button");
 
     async function checkSession() {
-      const { data, error } =
-        await supabaseClient.auth.getSession();
+  const { data, error } =
+    await supabaseClient.auth.getSession();
 
-      if (error || !data.session) {
-        message.textContent =
-          "Session absente ou expirée. Veuillez reprendre votre invitation.";
+  if (error || !data.session) {
+    message.textContent =
+      "Session absente ou expirée. Veuillez reprendre votre invitation.";
 
-        form.style.display = "none";
-        return;
-      }
+    form.style.display = "none";
+    return;
+  }
 
-      const { data: admin, error: adminError } =
-        await supabaseClient
-          .from("admins")
-          .select("id, status, role")
-          .eq("id", data.session.user.id)
-          .maybeSingle();
+  const { data: admin, error: adminError } =
+    await supabaseClient
+      .from("admins")
+      .select("id, status, role")
+      .eq("id", data.session.user.id)
+      .maybeSingle();
 
-      if (
-        adminError ||
-        !admin ||
-        admin.role !== "admin" ||
-        !["pending", "active"].includes(admin.status)
-      ) {
-        message.textContent =
-          "Ce compte n'est pas autorisé à compléter ce dossier.";
+  if (
+    adminError ||
+    !admin ||
+    admin.role !== "admin" ||
+    !["pending", "active"].includes(admin.status)
+  ) {
+    message.textContent =
+      "Ce compte n'est pas autorisé à compléter ce dossier.";
 
-        form.style.display = "none";
-        return;
-      }
+    form.style.display = "none";
+    return;
+  }
 
-      const { data: existingProfile } =
-        await supabaseClient
-          .from("admin_profiles")
-          .select("id")
-          .eq("id", data.session.user.id)
-          .maybeSingle();
+  const { data: existingProfile, error: profileError } =
+    await supabaseClient
+      .from("admin_profiles")
+      .select("id")
+      .eq("id", data.session.user.id)
+      .maybeSingle();
 
-      if (existingProfile) {
-        message.textContent =
-          "Votre dossier existe déjà. Vous allez accéder à votre espace.";
+  if (profileError) {
+    message.textContent =
+      "Impossible de vérifier votre dossier : " + profileError.message;
+    form.style.display = "none";
+    return;
+  }
 
-        window.location.href = "dashboard.html";
-      }
-    }
+  if (admin.status === "active" && existingProfile) {
+    message.textContent =
+      "Votre compte est déjà activé. Redirection vers votre espace...";
 
+    form.style.display = "none";
+
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 2000);
+
+    return;
+  }
+
+  if (admin.status === "pending" && existingProfile) {
+    message.textContent =
+      "Votre dossier existe déjà. Vous pouvez terminer l'activation de votre compte.";
+
+    button.textContent = "Finaliser mon inscription";
+  }
+}
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
