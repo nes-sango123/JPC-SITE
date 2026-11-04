@@ -540,7 +540,7 @@ async function loadAdmins() {
                 }[action];
 
                 button.addEventListener("click", () => {
-                    manageAdmin(action, admin.id);
+                    brightHandler(action, admin.id);
                 });
 
                 item.appendChild(button);
@@ -551,7 +551,7 @@ async function loadAdmins() {
     });
 }
 
-async function manageAdmin(action, adminId = null, email = null) {
+async function brightHandler(action, adminId = null, email = null) {
     const message = document.getElementById("admin-message");
 
     const { data, error } = await supabaseClient.functions.invoke(
@@ -587,7 +587,7 @@ document.getElementById("add-admin-button")
             return;
         }
 
-        await manageAdmin("add", null, email);
+        await brightHandler("add", null, email);
         emailInput.value = "";
     });
         checkSession();
