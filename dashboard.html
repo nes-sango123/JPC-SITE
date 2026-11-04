@@ -555,7 +555,7 @@ async function manageAdmin(action, adminId = null, email = null) {
     const message = document.getElementById("admin-message");
 
     const { data, error } = await supabaseClient.functions.invoke(
-        "manage-admins",
+        "bright-handler",
         {
             body: {
                 action: action,
