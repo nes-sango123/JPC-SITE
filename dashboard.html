@@ -552,28 +552,47 @@ async function loadAdmins() {
 }
 
 async function brightHandler(action, adminId = null, email = null) {
-    const message = document.getElementById("admin-message");
+  const message = document.getElementById("admin-message");
 
-    const { data, error } = await supabaseClient.functions.invoke(
-        "bright-handler",
-        {
-            body: {
-                action: action,
-                adminId: adminId,
-                email: email
-            }
-        }
-    );
-
-    if (error || data?.error) {
-        message.textContent =
-            data?.error || error?.message || "Une erreur est survenue.";
-        return;
+  const { data, error } = await supabaseClient.functions.invoke(
+    "bright-handler",
+    {
+      body: {
+        action: action,
+        adminId: adminId,
+        email: email
+      }
     }
+  );
 
-    message.textContent = data.message;
+  let errorMessage = data?.error || data?.message;
 
-    await loadAdmins();
+  if (error) {
+    console.error("Erreur complète :", error);
+
+    if (error.context && typeof error.context.clone === "function") {
+      const responseBody = await error.context.clone()
+        .json()
+        .catch(() => null);
+
+      console.error("Réponse du serveur :", responseBody);
+
+      errorMessage =
+        responseBody?.error ||
+        responseBody?.message ||
+        error.message;
+    } else {
+      errorMessage = error.message;
+    }
+  }
+
+  if (error || data?.error) {
+    message.textContent = errorMessage || "Une erreur est survenue.";
+    return;
+  }
+
+  message.textContent = data.message;
+  await loadAdmins();
 }
 
 document.getElementById("add-admin-button")
