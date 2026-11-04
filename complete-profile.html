@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dossier administrateur | JPC</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 25px 15px;
+      background: #f1f5f9;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 20px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      color: #14532d;
+      text-align: center;
+    }
+
+    .intro {
+      color: #475569;
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .privacy {
+      background: #f0fdf4;
+      border-left: 4px solid #14532d;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #166534;
+      margin-bottom: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      margin-bottom: 17px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 7px;
+      color: #334155;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: 2px solid #14532d;
+      border-color: #14532d;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      background: #14532d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #message {
+      text-align: center;
+      margin-top: 18px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 550px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+
+    <h1>Votre dossier administrateur</h1>
+
+    <p class="intro">
+      Bienvenue dans l'équipe administrative de Jeunesse Pour Christ.
+      Veuillez compléter les renseignements demandés.
+    </p>
+
+    <div class="privacy">
+      Vos renseignements personnels sont confidentiels.
+      Ils sont accessibles à vous-même et à l'administrateur principal
+      de JPC. Ils ne seront pas publiés sur le site officiel.
+    </div>
+
+    <form id="profile-form">
+
+      <div class="grid">
+
+        <div class="field">
+          <label for="nom">Nom *</label>
+          <input type="text" id="nom" required>
+        </div>
+
+        <div class="field">
+          <label for="post_nom">Post-nom *</label>
+          <input type="text" id="post_nom" required>
+        </div>
+
+        <div class="field">
+          <label for="prenom">Prénom *</label>
+          <input type="text" id="prenom" required>
+        </div>
+
+        <div class="field">
+          <label for="date_naissance">Date de naissance *</label>
+          <input type="date" id="date_naissance" required>
+        </div>
+
+        <div class="field">
+          <label for="telephone">Téléphone principal *</label>
+          <input type="tel" id="telephone" required>
+        </div>
+
+        <div class="field">
+          <label for="telephone_secondaire">
+            Téléphone secondaire
+          </label>
+          <input type="tel" id="telephone_secondaire">
+        </div>
+
+        <div class="field full">
+          <label for="adresse">Adresse de domicile *</label>
+          <input type="text" id="adresse" required>
+        </div>
+
+        <div class="field">
+          <label for="commune">Commune *</label>
+          <input type="text" id="commune" required>
+        </div>
+
+        <div class="field">
+          <label for="ville">Ville *</label>
+          <input type="text" id="ville" value="Kinshasa" required>
+        </div>
+
+        <div class="field full">
+          <label for="pays">Pays *</label>
+          <input
+            type="text"
+            id="pays"
+            value="République démocratique du Congo"
+            required
+          >
+        </div>
+
+      </div>
+
+      <button type="submit" id="submit-button">
+        Enregistrer mon dossier
+      </button>
+
+      <p id="message"></p>
+
+    </form>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL =
+      "https://ndnadcyrqtlesyybzgoa.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable__cg6_S1uHx6kXhwkBY2kTg_ZgcIsPAA";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const form = document.getElementById("profile-form");
+    const message = document.getElementById("message");
+    const button = document.getElementById("submit-button");
+
+    async function checkSession() {
+      const { data, error } =
+        await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        message.textContent =
+          "Session absente ou expirée. Veuillez reprendre votre invitation.";
+
+        form.style.display = "none";
+        return;
+      }
+
+      const { data: admin, error: adminError } =
+        await supabaseClient
+          .from("admins")
+          .select("id, status, role")
+          .eq("id", data.session.user.id)
+          .maybeSingle();
+
+      if (
+        adminError ||
+        !admin ||
+        admin.role !== "admin" ||
+        !["pending", "active"].includes(admin.status)
+      ) {
+        message.textContent =
+          "Ce compte n'est pas autorisé à compléter ce dossier.";
+
+        form.style.display = "none";
+        return;
+      }
+
+      const { data: existingProfile } =
+        await supabaseClient
+          .from("admin_profiles")
+          .select("id")
+          .eq("id", data.session.user.id)
+          .maybeSingle();
+
+      if (existingProfile) {
+        message.textContent =
+          "Votre dossier existe déjà. Vous allez accéder à votre espace.";
+
+        window.location.href = "dashboard.html";
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      button.disabled = true;
+      button.textContent = "Enregistrement...";
+      message.textContent = "";
+
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+
+      const session = sessionData?.session;
+
+      if (sessionError || !session) {
+        message.textContent = "Votre session a expiré.";
+        button.disabled = false;
+        button.textContent = "Enregistrer mon dossier";
+        return;
+      }
+
+      const profile = {
+        id: session.user.id,
+        nom: document.getElementById("nom").value.trim(),
+        post_nom: document.getElementById("post_nom").value.trim(),
+        prenom: document.getElementById("prenom").value.trim(),
+        date_naissance:
+          document.getElementById("date_naissance").value,
+        telephone:
+          document.getElementById("telephone").value.trim(),
+        telephone_secondaire:
+          document.getElementById("telephone_secondaire").value.trim() || null,
+        adresse: document.getElementById("adresse").value.trim(),
+        commune: document.getElementById("commune").value.trim(),
+        ville: document.getElementById("ville").value.trim(),
+        pays: document.getElementById("pays").value.trim()
+      };
+
+      if (Object.values(profile).some(value => value === "")) {
+        message.textContent =
+          "Veuillez remplir tous les champs obligatoires.";
+
+        button.disabled = false;
+        button.textContent = "Enregistrer mon dossier";
+        return;
+      }
+
+      const { data: existingProfile, error: checkError } =
+        await supabaseClient
+          .from("admin_profiles")
+          .select("id")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+      if (checkError) {
+        message.textContent = checkError.message;
+        button.disabled = false;
+        button.textContent = "Enregistrer mon dossier";
+        return;
+      }
+
+      if (!existingProfile) {
+        const { error: insertError } =
+          await supabaseClient
+            .from("admin_profiles")
+            .insert(profile);
+
+        if (insertError) {
+          message.textContent =
+            "Erreur lors de l'enregistrement : " + insertError.message;
+
+          button.disabled = false;
+          button.textContent = "Enregistrer mon dossier";
+          return;
+        }
+      }
+
+      const { data: result, error: finalizeError } =
+        await supabaseClient.rpc("finalize_admin_registration");
+
+      if (finalizeError) {
+        message.textContent =
+          "Dossier enregistré, mais activation impossible : " +
+          finalizeError.message;
+
+        button.disabled = false;
+        button.textContent = "Réessayer l'activation";
+        return;
+      }
+
+      message.textContent =
+        "Votre dossier est enregistré et votre compte est activé.";
+
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 2000);
+    });
+
+    checkSession();
+  </script>
+
+</body>
+</html>
