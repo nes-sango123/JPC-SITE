@@ -123,10 +123,17 @@
             >
 
             <button type="submit" id="login-button">
-                Se connecter
-            </button>
+        Se connecter
+        </button>
 
-            <p id="message" role="status" aria-live="polite"></p>
+        <p style="text-align:center;
+        margin-top:18px;">
+        <a href="#" id="forgot-password"
+        style="color:#166534;">
+        Mot de passe oublié ?
+        </a>
+        </p>
+        <p id="message" role="status" aria-live="polite"></p>
         </form>
 
         <a href="index.html" class="back-link">
