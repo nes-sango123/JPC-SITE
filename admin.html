@@ -153,9 +153,37 @@
             SUPABASE_KEY
         );
 
-        const form = document.getElementById("login-form");
-        const button = document.getElementById("login-button");
-        const message = document.getElementById("message");
+        const forgotPassword =
+    document.getElementById("forgot-password");
+
+forgotPassword.addEventListener("click", async function (event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        message.textContent =
+            "Veuillez saisir votre adresse e-mail avant de continuer.";
+        return;
+    }
+
+    message.textContent = "Envoi du lien de récupération...";
+
+    const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo:
+                "https://nes-sango123.github.io/JPC-SITE/password.html"
+        });
+
+    if (error) {
+        message.textContent =
+            "Erreur : " + error.message;
+        return;
+    }
+
+    message.textContent =
+        "Un lien de récupération a été envoyé à votre adresse e-mail.";
+});
 
         form.addEventListener("submit", async function (event) {
             event.preventDefault();
