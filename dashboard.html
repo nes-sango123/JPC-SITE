@@ -198,6 +198,17 @@
 
         <p id="activity-message" role="status"></p>
     </form>
+            <section class="welcome">
+    <h2>Activités enregistrées</h2>
+
+    <p>
+        Retrouve ici les activités ajoutées dans l'espace administrateur.
+    </p>
+
+    <div id="activities-list">
+        <p>Chargement des activités...</p>
+    </div>
+</section>
 </section>
         <!-- Nouvelle section à ajouter -->
         <section class="welcome">
@@ -372,7 +383,6 @@ if (error) {
 throw error;
 }
             
-
             activityMessage.textContent =
                 "Activité enregistrée avec succès !";
 
