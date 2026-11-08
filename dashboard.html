@@ -117,6 +117,7 @@
             </p>
         </section>
         <section id="admin-management" hidden>
+
     <h2>Gestion des administrateurs</h2>
 
     <div>
@@ -200,12 +201,16 @@
 </section>
         <!-- Nouvelle section à ajouter -->
         <section class="welcome">
-            <h2>Activités enregistrées</h2>
-            <p>Retrouve ici les activités ajoutées dans l'espace administrateur.</p>
-            <div id="activities-list">
-                <p>Chargement des activités...</p>
-            </div>
-        </section>
+    <h2>Corbeille</h2>
+    <p>
+        Retrouve ici les publications supprimées.
+        Tu peux restaurer tes propres publications.
+    </p>
+
+    <div id="trash-list">
+        <p>Chargement de la corbeille...</p>
+    </div>
+</section>
         <section class="cards">
 
             <article class="card">
@@ -387,118 +392,189 @@ throw error;
         }
     });
         async function loadActivities() {
-const activitiesList = document.getElementById("activities-list");
+    const activitiesList = document.getElementById("activities-list");
+    const trashList = document.getElementById("trash-list");
 
-activitiesList.textContent = "Chargement des activités...";
+    activitiesList.textContent = "Chargement des activités...";
+    trashList.textContent = "Chargement de la corbeille...";
 
-const { data, error } = await supabaseClient
-    .from("activites")
-    .select("*")
-    .order("created_at", { ascending: false });
-            console.log("Activités reçues :", data,"Erreur :", error);
-
-if (error) {
-    console.error("Erreur de chargement :", error);
-    activitiesList.textContent =
-        "Impossible de charger les activités : " + error.message;
-    return;
-}
-
-if (!data || data.length === 0) {
-    activitiesList.textContent = "Aucune activité enregistrée.";
-    return;
-}
-
-activitiesList.replaceChildren();
-
-data.forEach(function (activite) {
-    const card = document.createElement("article");
-
-    const title = document.createElement("h3");
-    title.textContent = activite.titre;
-
-    const description = document.createElement("p");
-    description.textContent = activite.description;
-
-    const lieu = document.createElement("p");
-    lieu.textContent = "Lieu : " + (activite.lieu || "Non précisé");
-
-    const date = document.createElement("p");
-    date.textContent = "Date : " +
-        (activite.date_activite
-            ? new Date(activite.date_activite).toLocaleString("fr-FR")
-            : "Non précisée");
-
-    const status = document.createElement("p");
-    status.textContent = activite.publie
-        ? "Statut : Publiée"
-        : "Statut : Brouillon";
-    const editButton = document.createElement("button");
-editButton.type = "button";
-editButton.textContent = "Modifier";
-
-editButton.addEventListener("click", function () { editingActivityId = activite.id;
-document.getElementById("titre").value = activite.titre;
-document.getElementById("description").value = activite.description;
-document.getElementById("lieu").value = activite.lieu || "";
-document.getElementById("date_activite").value =
-activite.date_activite
-? activite.date_activite.slice(0, 10) +
-    "T" +
-    (activite.heure_activite ? activite.heure_activite.slice(0,5)
-     : "00:00")
-: "";
-document.getElementById("image_url").value = activite.image_url || "";
-document.getElementById("publie").checked = activite.publie;
-
-document.getElementById("activity-form").scrollIntoView({
-    behavior: "smooth"
-});
-
-document.getElementById("activity-message").textContent =
-    "Modifie les informations, puis enregistre les changements.";
-
-});
-
-    const deleteButton = document.createElement("button");
-deleteButton.type = "button";
-deleteButton.textContent = "Supprimer";
-
-deleteButton.addEventListener("click", async function () {
-    const confirmation = confirm(
-        "Veux-tu vraiment supprimer cette activité ?"
-    );
-
-    if (!confirmation) {
-        return;
-    }
-
-    const { error } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from("activites")
-        .delete()
-        .eq("id", activite.id);
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    console.log("Activités reçues :", data, "Erreur :", error);
 
     if (error) {
-        alert("Erreur lors de la suppression : " + error.message);
+        console.error("Erreur de chargement :", error);
+        activitiesList.textContent = "Erreur : " + error.message;
+        trashList.textContent = "Impossible de charger la corbeille.";
         return;
     }
 
-    alert("Activité supprimée avec succès !");
-    await loadActivities();
-});
+    activitiesList.replaceChildren();
+    trashList.replaceChildren();
 
-card.append(
-    title,
-    description,
-    lieu,
-    date,
-    status,
-    editButton,
-    deleteButton
-);
-    activitiesList.appendChild(card);
-});
+    const activeActivities = data.filter(a => a.deleted_at === null);
+    const deletedActivities = data.filter(a => a.deleted_at !== null);
 
+    if (activeActivities.length === 0) {
+        activitiesList.textContent = "Aucune publication active.";
+    }
+
+    if (deletedActivities.length === 0) {
+        trashList.textContent = "La corbeille est vide.";
+    }
+
+    // AFFICHER LES PUBLICATIONS ACTIVES
+    activeActivities.forEach(function (activite) {
+        const card = document.createElement("article");
+
+        const title = document.createElement("h3");
+        title.textContent = activite.titre;
+
+        const description = document.createElement("p");
+        description.textContent = activite.description;
+
+        const lieu = document.createElement("p");
+        lieu.textContent = "Lieu : " + (activite.lieu || "Non précisé");
+
+        const date = document.createElement("p");
+        date.textContent = "Date : " +
+            (activite.date_activite
+                ? new Date(activite.date_activite).toLocaleString("fr-FR")
+                : "Non précisée");
+
+        const status = document.createElement("p");
+        status.textContent = activite.publie
+            ? "Statut : Publiée"
+            : "Statut : Brouillon";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.textContent = "Modifier";
+
+        editButton.addEventListener("click", function () {
+            editingActivityId = activite.id;
+
+            document.getElementById("titre").value = activite.titre;
+            document.getElementById("description").value = activite.description;
+            document.getElementById("lieu").value = activite.lieu || "";
+
+            document.getElementById("date_activite").value =
+                activite.date_activite
+                    ? activite.date_activite.slice(0, 10) +
+                      "T" +
+                      (activite.heure_activite
+                          ? activite.heure_activite.slice(0, 5)
+                          : "00:00")
+                    : "";
+
+            document.getElementById("image_url").value = activite.image_url || "";
+            document.getElementById("publie").checked = activite.publie;
+
+            document.getElementById("activity-form").scrollIntoView({
+                behavior: "smooth"
+            });
+
+            document.getElementById("activity-message").textContent =
+                "Modifie les informations, puis enregistre les changements.";
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "Supprimer";
+
+        deleteButton.addEventListener("click", async function () {
+            const confirmation = confirm(
+                "Placer cette activité dans la corbeille ?"
+            );
+
+            if (!confirmation) return;
+
+            const { data: { user }, error: userError } =
+                await supabaseClient.auth.getUser();
+
+            if (userError || !user) {
+                alert("Session expirée. Reconnecte-toi.");
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from("activites")
+                .update({
+                    deleted_at: new Date().toISOString(),
+                    deleted_by: user.id
+                })
+                .eq("id", activite.id);
+
+            if (error) {
+                alert("Erreur : " + error.message);
+                return;
+            }
+
+            alert("Activité déplacée dans la corbeille.");
+            await loadActivities();
+        });
+
+        card.append(
+            title,
+            description,
+            lieu,
+            date,
+            status,
+            editButton,
+            deleteButton
+        );
+
+        activitiesList.appendChild(card);
+    });
+
+    // AFFICHER LES PUBLICATIONS SUPPRIMÉES
+    deletedActivities.forEach(function (activite) {
+        const card = document.createElement("article");
+
+        const title = document.createElement("h3");
+        title.textContent = activite.titre;
+
+        const description = document.createElement("p");
+        description.textContent = activite.description;
+
+        const deletedDate = document.createElement("p");
+        deletedDate.textContent = "Supprimée le : " +
+            new Date(activite.deleted_at).toLocaleString("fr-FR");
+
+        const restoreButton = document.createElement("button");
+        restoreButton.type = "button";
+        restoreButton.textContent = "Restaurer";
+
+        restoreButton.addEventListener("click", async function () {
+            const confirmation = confirm(
+                "Veux-tu vraiment restaurer cette activité ?"
+            );
+
+            if (!confirmation) return;
+
+            const { error } = await supabaseClient
+                .from("activites")
+                .update({
+                    deleted_at: null,
+                    deleted_by: null
+                })
+                .eq("id", activite.id);
+
+            if (error) {
+                alert("Erreur lors de la restauration : " + error.message);
+                return;
+            }
+
+            alert("Activité restaurée avec succès !");
+            await loadActivities();
+        });
+
+        card.append(title, description, deletedDate, restoreButton);
+        trashList.appendChild(card);
+    });
 }
         // GESTION DES ADMINISTRATEURS
 
